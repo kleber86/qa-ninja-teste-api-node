@@ -9,7 +9,7 @@ const request = chai.request.agent(app);
 const expect = chai.expect;
 
 
-describe('delete', () => {
+describe('DELETE', () => {
 
     // Solução B 
     context('quando apago uma tarefa', () => {
