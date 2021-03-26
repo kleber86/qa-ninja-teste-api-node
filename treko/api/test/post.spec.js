@@ -7,13 +7,25 @@ chai.use(chaiHttp)
 const app = require('../app')
 const request = chai.request.agent(app)
 const expect = chai.expect
+const rabbit = chai.request('http://rabbitmq:15672')
 
-describe('post', ()=> {
+describe('POST', ()=> {
 
 
     context('quando eu cadastro uma tarefa', ()=>{
 
         let task = { title: 'Estudar Mongoose', owner: 'eu@papito.io', done: false }
+
+        before(done => {
+            rabbit
+                .delete('/api/queues/%2F/tasksdev/contents')
+                .auth('guest', 'guest')
+                .end((err, res) => {
+                    expect(res).to.has.status(204)
+                    done()
+                })
+
+        })
 
         it('entao deve retornar 200', (done) => {
             request
@@ -25,6 +37,22 @@ describe('post', ()=> {
                     expect(res.body.data.title).to.equal('Estudar Mongoose')
                     expect(res.body.data.done).to.equal(false)
                     done()
+                })
+        })
+
+        it('e deve enviar um email', (done)=> {
+            let payload = { vhost: "/", name: "tasksdev", truncate: "50000", ackmode: "ack_requeue_true", encoding: "auto", count: "1000" }
+
+            rabbit
+                .post("/api/queues/%2f/tasksdev/get")
+                .auth('guest', 'guest')
+                .send(payload)
+                .end((err, res)=> {
+                    expect(res).to.has.status(200)
+                    //console.log(res.body[0].payload)
+                    expect(res.body[0].payload).to.contains(`Tarefa ${task.title} criada com sucesso!`)
+                    done()
+
                 })
         })
     })
