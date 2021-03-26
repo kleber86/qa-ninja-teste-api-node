@@ -3,18 +3,18 @@ const nodemailer = require('nodemailer');
 var amqp = require('amqplib/callback_api');
 
 const transporter = nodemailer.createTransport({
-    host: "smtp.seuhost.com",
+    host: "smtp.office365.com",
     port: 587,
     secure: false,
     auth: {
-        user: "email",
-        pass: "senha"
+        user: "kleberalves@outlook.com",
+        pass: ""
     },
     tls: { rejectUnauthorized: false }
 });
 
 
-amqp.connect('amqp://localhost:5672', function (err, conn) {
+amqp.connect('amqp://rabbitmq:5672', function (err, conn) {
     conn.createChannel(function (err, ch) {
         var q = 'tasks';
 
@@ -26,7 +26,7 @@ amqp.connect('amqp://localhost:5672', function (err, conn) {
             var msgJSON = JSON.parse(msg.content.toString());
             console.log(msgJSON)
             const mailOptions = {
-                from: 'fernando@qaninja.io',
+                from: 'kleberalves@outlook.com',
                 to: msgJSON.email,
                 subject: 'E-mail enviado usando Node!',
                 html: msgJSON.html
